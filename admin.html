@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة التحكم - المتجر</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%233b82f6'/%3E%3Ctext x='50' y='58' font-size='50' fill='white' text-anchor='middle' font-family='Arial'%3Eم%3C/text%3E%3C/svg%3E">
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+  <header class="bg-white shadow">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">م</div>
+        <div class="text-lg font-semibold">لوحة التحكم</div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="logout" class="text-sm text-red-600">تسجيل خروج</button>
+        <a href="index.html" class="text-sm text-gray-600">عرض المتجر</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold">طلبات اليوم</h1>
+      <div>
+        <span class="text-sm text-gray-600">عدد الطلبات اليوم: </span>
+        <span id="today-count" class="font-semibold">0</span>
+      </div>
+    </div>
+
+    <div class="bg-white rounded shadow overflow-x-auto">
+      <table class="w-full text-sm table-auto">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-right">رقم الطلب</th>
+            <th class="px-4 py-3 text-right">الزبون</th>
+            <th class="px-4 py-3 text-right">المنتجات</th>
+            <th class="px-4 py-3 text-right">المجموع</th>
+            <th class="px-4 py-3 text-right">الوقت</th>
+            <th class="px-4 py-3 text-right">إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="orders-table" class="divide-y"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer class="bg-white border-t">
+    <div class="max-w-6xl mx-auto px-4 py-6 text-sm text-gray-600 text-center">© 2025 متجري</div>
+  </footer>
+
+  <script src="main.js" defer></script>
+  <script defer>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (sessionStorage.getItem('adminLogged') !== 'true') {
+        location.href = 'admin-login.html';
+        return;
+      }
+      const logout = document.getElementById('logout');
+      logout.addEventListener('click', function () {
+        sessionStorage.removeItem('adminLogged');
+        location.href = 'admin-login.html';
+      });
+
+      function render() {
+        const table = document.getElementById('orders-table');
+        table.innerHTML = '';
+        const todayOrders = getOrdersForToday();
+        document.getElementById('today-count').textContent = todayOrders.length;
+        if (todayOrders.length === 0) {
+          table.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">لا توجد طلبات لليوم</td></tr>';
+          return;
+        }
+        todayOrders.forEach(order => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="px-4 py-3 text-right">${order.id}</td>
+            <td class="px-4 py-3 text-right">
+              <div class="font-semibold">${escapeHtml(order.customer.name)}</div>
+              <div class="text-xs text-gray-500">${escapeHtml(order.customer.phone)} - ${escapeHtml(order.customer.state)}</div>
+            </td>
+            <td class="px-4 py-3 text-right">
+              ${order.products.map(p=>`<div class="text-sm">${escapeHtml(p.title)} × ${p.qty}</div>`).join('')}
+            </td>
+            <td class="px-4 py-3 text-right">${formatPrice(order.total)}</td>
+            <td class="px-4 py-3 text-right">${(new Date(order.date)).toLocaleString('ar-EG')}</td>
+            <td class="px-4 py-3 text-right">
+              <button data-id="${order.id}" class="delete-order px-3 py-1 bg-red-600 text-white rounded text-xs">حذف</button>
+            </td>
+          `;
+          table.appendChild(tr);
+        });
+
+        table.querySelectorAll('.delete-order').forEach(btn=>{
+          btn.addEventListener('click', function () {
+            const id = this.dataset.id;
+            if (!confirm('هل تريد حذف الطلب؟')) return;
+            deleteOrderById(id);
+            render();
+          });
+        });
+      }
+
+      render();
+    });
+
+    function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>تسجيل دخول المسؤول - المتجر</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%233b82f6'/%3E%3Ctext x='50' y='58' font-size='50' fill='white' text-anchor='middle' font-family='Arial'%3Eم%3C/text%3E%3C/svg%3E">
+</head>
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800 flex items-center justify-center">
+  <div class="w-full max-w-md">
+    <div class="bg-white p-6 rounded shadow">
+      <h1 class="text-xl font-bold mb-4">تسجيل دخول المسؤول</h1>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="text-sm mb-1 block">اسم المستخدم</label>
+          <input name="user" class="w-full px-3 py-2 border rounded" value="admin" />
+        </div>
+        <div>
+          <label class="text-sm mb-1 block">كلمة المرور</label>
+          <input name="pass" type="password" class="w-full px-3 py-2 border rounded" />
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">دخول</button>
+          <a href="index.html" class="px-4 py-2 border rounded">عودة</a>
+        </div>
+      </form>
+      <p class="text-xs text-gray-500 mt-3">كلمة المرور الافتراضية هي: <strong>rami</strong></p>
+      <div id="err" class="mt-3 text-sm text-red-600 hidden"></div>
+    </div>
+  </div>
+
+  <script defer>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.getElementById('loginForm');
+      const err = document.getElementById('err');
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const pass = form.pass.value;
+        if (pass === 'rami') {
+          sessionStorage.setItem('adminLogged', 'true');
+          location.href = 'admin.html';
+        } else {
+          err.textContent = 'كلمة المرور غير صحيحة';
+          err.classList.remove('hidden');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
