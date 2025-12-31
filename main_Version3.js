@@ -1,0 +1,308 @@
+/* main.js - يحتوي على بيانات المنتجات ووظائف السلة والطلبات */
+(function () {
+  // Products array
+  window.PRODUCTS = [
+    {
+      id: 'p1',
+      title: 'قميص قطني أنيق',
+      price: 19.99,
+      description: 'قميص قطني مريح بتصميم عصري مناسب لكل الأوقات.',
+      image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23f8fafc"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="28" fill="%230b5394" font-family="Arial">قميص قطني أنيق</text></svg>',
+      category: 'ملابس',
+      stock: 50
+    },
+    {
+      id: 'p2',
+      title: 'سماعات لاسلكية',
+      price: 49.5,
+      description: 'سماعات مريحة بجودة صوت عالية وعزل جيد للضوضاء.',
+      image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23fff7ed"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="28" fill="%23b45309" font-family="Arial">سماعات لاسلكية</text></svg>',
+      category: 'إلكترونيات',
+      stock: 25
+    },
+    {
+      id: 'p3',
+      title: 'حقيبة ظهر متينة',
+      price: 39.0,
+      description: 'حقيبة ظهر متعددة الجيوب ومقاومة للماء للمشاوير اليومية والسفر.',
+      image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23ecfccb"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="28" fill="%234a7c0b" font-family="Arial">حقيبة ظهر متينة</text></svg>',
+      category: 'اكسسوارات',
+      stock: 30
+    },
+    {
+      id: 'p4',
+      title: 'ساعة ذكية',
+      price: 89.99,
+      description: 'ساعة ذكية بمزايا صحية وإشعارات التطبيقات مع بطارية طويلة الأمد.',
+      image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23eef2ff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="28" fill="%23343f78" font-family="Arial">ساعة ذكية</text></svg>',
+      category: 'إلكترونيات',
+      stock: 15
+    },
+    {
+      id: 'p5',
+      title: 'حذاء رياضي مريح',
+      price: 59.0,
+      description: 'حذاء رياضي بخامة جيدة وتصميم عملي للتمارين والمشي.',
+      image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23fff1f2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="28" fill="%23b91c1c" font-family="Arial">حذاء رياضي مريح</text></svg>',
+      category: 'أحذية',
+      stock: 40
+    },
+    {
+      id: 'p6',
+      title: 'قلم ذكي',
+      price: 12.75,
+      description: 'قلم ذكي للاستخدام اليومي مع قبضة مريحة وتصميم أنيق.',
+      image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23f0f9ff"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="28" fill="%23004765" font-family="Arial">قلم ذكي</text></svg>',
+      category: 'مكتبية',
+      stock: 100
+    },
+    {
+      id: 'p7',
+      title: 'دفتر ملاحظات صغير',
+      price: 4.5,
+      description: 'دفتر ملاحظات صغير بحجم مناسب للملاحظات اليومية، بدون صور.',
+      image: 'https://i.postimg.cc/3x7y8z9/notebook.jpg',
+      category: 'مكتبية',
+      stock: 200
+    },
+    {
+      id: 'p8',
+      title: 'كوب سيراميك',
+      price: 7.25,
+      description: 'كوب سيراميك بتصميم بسيط وأنيق مناسب للمشروبات الساخنة، بدون صور.',
+      image: 'https://i.postimg.cc/7hK2L1m4/mug.jpg',
+      category: 'مطبخ',
+      stock: 80
+    },
+    {
+      id: 'p9',
+      title: 'مصباح مكتب LED صغير',
+      price: 22.0,
+      description: 'مصباح مكتب LED قابل للتعديل وباستهلاك طاقة منخفض، بدون صور.',
+      image: 'https://i.postimg.cc/9sY4pQ2k/desk-lamp.jpg',
+      category: 'منزل',
+      stock: 35
+    }
+  ];
+
+  // Utilities
+  window.formatPrice = function (n) {
+    return n.toLocaleString('ar-EG', { style: 'currency', currency: 'USD' }).replace('US$', '');
+  };
+
+  function nowISO() {
+    return new Date().toISOString();
+  }
+
+  // Cart management - stored as array of {id, qty}
+  const CART_KEY = 'cart';
+  const ORDERS_KEY = 'orders';
+
+  window.loadCart = function () {
+    try {
+      const raw = localStorage.getItem(CART_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  window.saveCart = function (cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  };
+
+  window.addToCart = function (productId, qty) {
+    qty = Math.max(1, parseInt(qty) || 1);
+    const cart = loadCart();
+    const found = cart.find(i => i.id === productId);
+    if (found) {
+      found.qty += qty;
+    } else {
+      cart.push({ id: productId, qty: qty });
+    }
+    saveCart(cart);
+  };
+
+  window.updateCartItemQty = function (productId, qty) {
+    qty = Math.max(1, parseInt(qty) || 1);
+    const cart = loadCart();
+    const idx = cart.findIndex(i => i.id === productId);
+    if (idx >= 0) {
+      cart[idx].qty = qty;
+      saveCart(cart);
+    }
+  };
+
+  window.removeFromCart = function (productId) {
+    let cart = loadCart();
+    cart = cart.filter(i => i.id !== productId);
+    saveCart(cart);
+  };
+
+  window.clearCart = function () {
+    saveCart([]);
+  };
+
+  window.getProductById = function (id) {
+    return window.PRODUCTS.find(p => p.id === id);
+  };
+
+  window.renderProductsGrid = function (containerId, opts) {
+    opts = opts || {};
+    const limit = opts.limit || 0;
+    const query = (opts.query || '').trim().toLowerCase();
+    const container = typeof containerId === 'string' ? document.getElementById(containerId) : containerId;
+    if (!container) return;
+    let list = window.PRODUCTS.slice();
+    if (query) {
+      list = list.filter(p => (p.title + ' ' + p.description + ' ' + (p.category||'')).toLowerCase().includes(query));
+    }
+    if (limit > 0) list = list.slice(0, limit);
+    container.innerHTML = '';
+    if (list.length === 0) {
+      container.innerHTML = '<div class="p-4 text-gray-500">لا توجد منتجات.</div>';
+      return;
+    }
+    list.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-lg p-4 shadow flex flex-col';
+      card.innerHTML = `
+        <a href="product.html?id=${encodeURIComponent(p.id)}" class="block">
+          <img src="${p.image || 'data:image/svg+xml;utf8,<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"800\\" height=\\"600\\"><rect width=\\"100%\\" height=\\"100%\\" fill=\\"%23f3f4f6\\"/><text x=\\"50%\\" y=\\"50%\\" dominant-baseline=\\"middle\\" text-anchor=\\"middle\\" font-size=\\"24\\" fill=\\"%239ca3af\\" font-family=\\"Arial\\">لا توجد صورة</text></svg>'}" alt="${escapeHtml(p.title)}" class="w-full h-40 object-cover rounded mb-3" />
+        </a>
+        <div class="flex-1">
+          <a href="product.html?id=${encodeURIComponent(p.id)}" class="text-right">
+            <h3 class="font-semibold">${escapeHtml(p.title)}</h3>
+          </a>
+          <p class="text-sm text-gray-500 mt-2">${escapeHtml(p.description)}</p>
+        </div>
+        <div class="mt-4 flex items-center justify-between gap-2">
+          <div class="text-lg font-semibold">${formatPrice(p.price)}</div>
+          <div class="flex items-center gap-2">
+            <button data-id="${p.id}" class="add-cart bg-blue-600 text-white px-3 py-1 rounded text-sm">أضف</button>
+            <a href="product.html?id=${encodeURIComponent(p.id)}" class="text-sm text-gray-500">تفاصيل</a>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    container.querySelectorAll('.add-cart').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const id = this.dataset.id;
+        addToCart(id, 1);
+        // brief visual feedback
+        this.textContent = 'تم';
+        setTimeout(()=> this.textContent = 'أضف', 800);
+      });
+    });
+  };
+
+  window.renderCart = function (containerSelector, summarySelector) {
+    const container = typeof containerSelector === 'string' ? document.querySelector(containerSelector) : containerSelector;
+    const summary = summarySelector ? (typeof summarySelector === 'string' ? document.querySelector(summarySelector) : summarySelector) : null;
+    if (!container) return;
+    const cart = loadCart();
+    if (cart.length === 0) {
+      container.innerHTML = '<div class="p-4 text-center text-gray-500">السلة فارغة.</div>';
+      if (summary) summary.textContent = 'الإجمالي: 0';
+      return;
+    }
+    let html = '<div class="space-y-4">';
+    let total = 0;
+    cart.forEach(item => {
+      const p = getProductById(item.id);
+      if (!p) return;
+      const lineTotal = p.price * item.qty;
+      total += lineTotal;
+      html += `
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <img src="${p.image || 'data:image/svg+xml;utf8,<svg xmlns=\\"http://www.w3.org/2000/svg\\" width=\\"800\\" height=\\"600\\"><rect width=\\"100%\\" height=\\"100%\\" fill=\\"%23f3f4f6\\"/><text x=\\"50%\\" y=\\"50%\\" dominant-baseline=\\"middle\\" text-anchor=\\"middle\\" font-size=\\"24\\" fill=\\"%239ca3af\\" font-family=\\"Arial\\">لا توجد صورة</text></svg>'}" alt="${escapeHtml(p.title)}" class="w-20 h-20 rounded object-cover" />
+            <div class="text-right">
+              <div class="font-semibold">${escapeHtml(p.title)}</div>
+              <div class="text-sm text-gray-500">${formatPrice(p.price)} لكل وحدة</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input data-id="${p.id}" class="qty-input w-20 px-2 py-1 border rounded text-center" type="number" min="1" value="${item.qty}" />
+            <div class="text-right w-32">${formatPrice(lineTotal)}</div>
+            <button data-id="${p.id}" class="remove-item text-sm text-red-600">حذف</button>
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    if (summary) summary.textContent = 'الإجمالي: ' + formatPrice(total);
+  };
+
+  // Orders
+  window.getOrders = function () {
+    try {
+      const raw = localStorage.getItem(ORDERS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  window.saveOrders = function (orders) {
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+  };
+
+  window.placeOrder = function (customer) {
+    const cart = loadCart();
+    const products = cart.map(item => {
+      const p = getProductById(item.id);
+      return {
+        id: item.id,
+        title: p ? p.title : 'منتج محذوف',
+        price: p ? p.price : 0,
+        qty: item.qty
+      };
+    });
+    const total = products.reduce((s, it) => s + (it.price * it.qty), 0);
+    const order = {
+      id: 'ORD-' + Date.now(),
+      customer: customer,
+      products: products,
+      total: total,
+      date: nowISO()
+    };
+    const orders = getOrders();
+    orders.push(order);
+    saveOrders(orders);
+    clearCart();
+    return order;
+  };
+
+  window.getOrdersForToday = function () {
+    const orders = getOrders();
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = today.getMonth();
+    const d = today.getDate();
+    return orders.filter(o => {
+      const od = new Date(o.date);
+      return od.getFullYear() === y && od.getMonth() === m && od.getDate() === d;
+    });
+  };
+
+  window.deleteOrderById = function (id) {
+    let orders = getOrders();
+    orders = orders.filter(o => o.id !== id);
+    saveOrders(orders);
+  };
+
+  // Helpers
+  function escapeHtml(s) {
+    return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  }
+  window.escapeHtml = escapeHtml;
+
+  // expose some functions for pages
+  window.placeOrder = window.placeOrder;
+  window.getOrdersForToday = window.getOrdersForToday;
+  window.deleteOrderById = window.deleteOrderById;
+})();
